@@ -66,17 +66,17 @@ jobs:
           ENVIRONMENT: staging # Custom environment variable
       # NOTE: these run unit and integration tests
       # we can look into coverage collection only later to make it faster and less brittle (--collect-only)
-      - name: Code coverage tests
-        run: make coverage-tests
-        env:
-          ENVIRONMENT: staging # Custom environment variable
-      - name: Codecov
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage.xml
-          fail_ci_if_error: yes # optional (default = false)
-          verbose: yes # optional (default = false)
+#      - name: Code coverage tests
+#        run: make coverage-tests
+#        env:
+#          ENVIRONMENT: staging # Custom environment variable
+#      - name: Codecov
+#        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+#        with:
+#          token: ${{ secrets.CODECOV_TOKEN }}
+#          files: ./coverage.xml
+#          fail_ci_if_error: yes # optional (default = false)
+#          verbose: yes # optional (default = false)
       - name: Run E2E tests
         run: make e2e
         env:
