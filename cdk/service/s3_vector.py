@@ -14,7 +14,9 @@ class S3VectorConstruct(Construct):
         self.id_ = id_
         self.lambda_role = self._build_lambda_role()
         self._grant_permissions_to_lambda_role()
+        self.common_layer = self._build_common_layer()
         self.lambda_function = self._build_lambda_function()
+        self.query_lambda_function = self._build_query_lambda_function()
 
     def _build_lambda_role(self) -> iam.Role:
         return iam.Role(
@@ -41,8 +43,10 @@ class S3VectorConstruct(Construct):
                 effect=iam.Effect.ALLOW,
                 actions=[
                     's3vectors:PutVectors',
+                    's3vectors:QueryVectors',
+                    's3vectors:GetVectors',
                 ],
-                resources=['*'],
+                resources=["*"]
             )
         )
 
@@ -77,6 +81,42 @@ class S3VectorConstruct(Construct):
         CfnOutput(self, f'{self.id_}LambdaOutput', value=lambda_function.function_name).override_logical_id(f'{self.id_}LambdaOutput')
 
         return lambda_function
+
+    def _build_query_lambda_function(self) -> _lambda.Function:
+        query_lambda_function = _lambda.Function(
+            self,
+            f'{self.id_}QueryLambda',
+            runtime=_lambda.Runtime.PYTHON_3_13,
+            code=_lambda.Code.from_asset(constants.BUILD_FOLDER),
+            handler='service.s3_vector.s3_vector_query.lambda_handler',
+            environment={
+                constants.POWERTOOLS_SERVICE_NAME: f'{self.id_}QueryService',
+                constants.POWER_TOOLS_LOG_LEVEL: 'INFO',
+                'S3_VECTOR_REGION': 'eu-central-1',
+                'BEDROCK_MODEL_ID': 'amazon.titan-embed-text-v2:0',
+                'BEDROCK_REGION': 'eu-central-1',
+                'S3_VECTOR_BUCKET': 'your-vector-bucket-name',  # Configure your S3 Vector bucket name
+                'S3_VECTOR_INDEX_NAME': 'default-index',  # Configure your S3 Vector index name
+            },
+            tracing=_lambda.Tracing.ACTIVE,
+            retry_attempts=0,
+            timeout=Duration.seconds(constants.API_HANDLER_LAMBDA_TIMEOUT),
+            memory_size=constants.API_HANDLER_LAMBDA_MEMORY_SIZE,
+            layers=[self.common_layer],
+            role=self.lambda_role,
+            log_retention=RetentionDays.ONE_DAY,
+            logging_format=_lambda.LoggingFormat.JSON,
+            system_log_level_v2=_lambda.SystemLogLevel.WARN,
+            architecture=_lambda.Architecture.X86_64,
+        )
+
+        CfnOutput(
+            self,
+            f'{self.id_}QueryLambdaOutput',
+            value=query_lambda_function.function_name
+        ).override_logical_id(f'{self.id_}QueryLambdaOutput')
+
+        return query_lambda_function
 
     def _build_common_layer(self) -> PythonLayerVersion:
         return PythonLayerVersion(
