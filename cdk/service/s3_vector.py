@@ -46,7 +46,7 @@ class S3VectorConstruct(Construct):
                     's3vectors:QueryVectors',
                     's3vectors:GetVectors',
                 ],
-                resources=["*"]
+                resources=['*'],
             )
         )
 
@@ -78,7 +78,9 @@ class S3VectorConstruct(Construct):
             architecture=_lambda.Architecture.X86_64,
         )
 
-        CfnOutput(self, f'{self.id_}LambdaOutput', value=lambda_function.function_name).override_logical_id(f'{self.id_}LambdaOutput')
+        CfnOutput(self, f'{self.id_}LambdaOutput', value=lambda_function.function_name).override_logical_id(
+            f'{self.id_.replace("-", "")}LambdaOutput'
+        )
 
         return lambda_function
 
@@ -110,11 +112,9 @@ class S3VectorConstruct(Construct):
             architecture=_lambda.Architecture.X86_64,
         )
 
-        CfnOutput(
-            self,
-            f'{self.id_}QueryLambdaOutput',
-            value=query_lambda_function.function_name
-        ).override_logical_id(f'{self.id_}QueryLambdaOutput')
+        CfnOutput(self, f'{self.id_}QueryLambdaOutput', value=query_lambda_function.function_name).override_logical_id(
+            f'{self.id_.replace("-", "")}QueryLambdaOutput'
+        )
 
         return query_lambda_function
 
