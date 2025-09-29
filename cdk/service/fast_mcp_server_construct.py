@@ -23,9 +23,10 @@ class FastMCPServerConstruct(Construct):
         self.db = self._build_db(id_prefix=f'{id_}db')
         self.lambda_role = self._build_lambda_role(self.db)
         self.common_layer = self._build_common_layer()
-        self.mcp_func = self._add_post_lambda_integration(self.lambda_role, self.db)
         self.http_api = self._build_api_gw()
-        self._create_mcp_integration(self.mcp_func, self.http_api)
+        api_resource: aws_apigateway.Resource = self.rest_api.root.add_resource(constants.GW_RESOURCE)
+        # self._create_mcp_integration(self.mcp_func, self.http_api)
+        self.mcp_func = self._add_post_lambda_integration(api_resource, self.lambda_role, self.db)
         self.monitoring = Monitoring(self, id_, self.http_api, self.db, [self.mcp_func])
         if is_production_env:
             self.waf = WafToApiGatewayConstruct(self, f'{id_}waf', self.rest_api)
@@ -97,6 +98,7 @@ class FastMCPServerConstruct(Construct):
 
     def _add_post_lambda_integration(
         self,
+        api_resource: aws_apigateway.Resource,
         role: iam.Role,
         db: dynamodb.TableV2,
     ) -> _lambda.Function:
@@ -132,4 +134,5 @@ class FastMCPServerConstruct(Construct):
             system_log_level_v2=_lambda.SystemLogLevel.WARN,
         )
 
+        api_resource.add_method(http_method='ANY', integration=aws_apigateway.LambdaIntegration(handler=lambda_function))
         return lambda_function
