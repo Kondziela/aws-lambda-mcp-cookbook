@@ -24,8 +24,7 @@ class FastMCPServerConstruct(Construct):
         self.common_layer = self._build_common_layer()
         self.rest_api = self._build_api_gw()
         api_resource: aws_apigateway.Resource = self.rest_api.root.add_resource(constants.GW_RESOURCE)
-        # self._create_mcp_integration(self.mcp_func, self.http_api)
-        self.mcp_func = self._add_post_lambda_integration(api_resource, self.lambda_role, self.db)
+        self.mcp_func = self._add_post_lambda_integration(api_resource, self.lambda_role, self.db, is_production_env)
         self.monitoring = Monitoring(self, id_, self.rest_api, self.db, [self.mcp_func])
         if is_production_env:
             self.waf = WafToApiGatewayConstruct(self, f'{id_}waf', self.rest_api)

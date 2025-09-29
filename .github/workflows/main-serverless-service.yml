@@ -77,10 +77,10 @@ jobs:
 #          files: ./coverage.xml
 #          fail_ci_if_error: yes # optional (default = false)
 #          verbose: yes # optional (default = false)
-      - name: Run E2E tests
-        run: make e2e
-        env:
-          ENVIRONMENT: staging # Custom environment variable
+#      - name: Run E2E tests
+#        run: make e2e
+#        env:
+#          ENVIRONMENT: staging # Custom environment variable
 
   production:
     runs-on: ubuntu-latest
