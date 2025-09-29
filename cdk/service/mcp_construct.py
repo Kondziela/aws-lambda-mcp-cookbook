@@ -19,6 +19,7 @@ class MCPApiConstruct(Construct):
         self.id_ = id_
         self.db = self._build_db(id_prefix=f'{id_}db')
         self.lambda_role = self._build_lambda_role(self.db)
+        self._grant_permissions_to_lambda_role()
         self.common_layer = self._build_common_layer()
         self.boto3_layer = self._build_boto3_layer()
         self.rest_api = self._build_api_gw()
@@ -136,6 +137,13 @@ class MCPApiConstruct(Construct):
                 constants.POWERTOOLS_SERVICE_NAME: constants.SERVICE_NAME,  # for logger, tracer and metrics
                 constants.POWER_TOOLS_LOG_LEVEL: 'INFO',  # for logger
                 'TABLE_NAME': db.table_name,  # for mcp session store
+                # Bedrock configuration for vector embeddings
+                'BEDROCK_REGION': 'eu-central-1',
+                'BEDROCK_MODEL_ID': 'amazon.titan-embed-text-v2:0',
+                # S3 Vector configuration
+                'S3_VECTOR_REGION': 'eu-central-1',
+                'S3_VECTOR_BUCKET': 'my-test-vector',  # Configure your S3 Vector bucket name
+                'S3_VECTOR_INDEX_NAME': 'my-test-vector-index',  # Configure your S3 Vector index name
             },
             tracing=_lambda.Tracing.ACTIVE,
             retry_attempts=0,
