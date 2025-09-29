@@ -4,7 +4,6 @@ from constructs import Construct
 
 from cdk.service.constants import OWNER_TAG, SERVICE_NAME, SERVICE_NAME_TAG
 from cdk.service.fast_mcp_server_construct import FastMCPServerConstruct
-from cdk.service.mcp_construct import MCPApiConstruct
 from cdk.service.utils import get_construct_name, get_username
 
 
@@ -13,15 +12,15 @@ class ServiceStack(Stack):
         super().__init__(scope, id, **kwargs)
         self._add_stack_tags()
 
-        self.pure_mcp_api = MCPApiConstruct(
-            self,
-            get_construct_name(stack_prefix=id, construct_name='pure'),
-            is_production_env=is_production_env,
-        )
+        # self.pure_mcp_api = MCPApiConstruct(
+        #     self,
+        #     get_construct_name(stack_prefix=id, construct_name='pure'),
+        #     is_production_env=is_production_env,
+        # )
 
         self.web_adapter_mcp_api = FastMCPServerConstruct(
             self,
-            get_construct_name(stack_prefix=id, construct_name='web_adapter'),
+            get_construct_name(stack_prefix=id, construct_name='web_adapter', is_production_env=is_production_env),
         )
 
         # add security check

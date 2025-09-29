@@ -1,4 +1,4 @@
-from aws_cdk import CfnOutput, Duration, RemovalPolicy
+from aws_cdk import CfnOutput, Duration, RemovalPolicy, aws_apigateway
 from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_iam as iam
@@ -11,11 +11,12 @@ from constructs import Construct
 
 import cdk.service.constants as constants
 from cdk.service.monitoring import Monitoring
+from cdk.service.waf_construct import WafToApiGatewayConstruct
 
 
 # this implements a server-based API construct for the MCP - use web-adapter extension to access the MCP and FastMCP
 class FastMCPServerConstruct(Construct):
-    def __init__(self, scope: Construct, id_: str) -> None:
+    def __init__(self, scope: Construct, id_: str, is_production_env: bool) -> None:
         super().__init__(scope, id_)
         self.id_ = id_
         self.region = Session().region_name
@@ -26,6 +27,8 @@ class FastMCPServerConstruct(Construct):
         self.http_api = self._build_api_gw()
         self._create_mcp_integration(self.mcp_func, self.http_api)
         self.monitoring = Monitoring(self, id_, self.http_api, self.db, [self.mcp_func])
+        if is_production_env:
+            self.waf = WafToApiGatewayConstruct(self, f'{id_}waf', self.rest_api)
 
     def _build_db(self, id_prefix: str) -> dynamodb.TableV2:
         table_id = f'{id_prefix}{constants.TABLE_NAME}'
@@ -49,7 +52,17 @@ class FastMCPServerConstruct(Construct):
         )
 
     def _build_api_gw(self) -> apigwv2.HttpApi:
-        return apigwv2.HttpApi(self, 'McpHttpApi')
+        rest_api: aws_apigateway.RestApi = aws_apigateway.RestApi(
+            self,
+            'fast-mcp-api',
+            rest_api_name='Fast MCP Server',
+            description='This service handles /mcp API requests.',
+            deploy_options=aws_apigateway.StageOptions(throttling_rate_limit=2, throttling_burst_limit=10),
+            cloud_watch_role=False,
+        )
+
+        CfnOutput(self, id=constants.FAST_MCP_API_URL, value=f'{rest_api.url}mcp').override_logical_id(constants.FAST_MCP_API_URL)
+        return rest_api
 
     def _build_lambda_role(self, db: dynamodb.TableV2) -> iam.Role:
         return iam.Role(

@@ -6,6 +6,7 @@ TABLE_NAME = 'sessions'
 TABLE_NAME_OUTPUT = 'DbOutput'
 FAST_MCP_TABLE_NAME_OUTPUT = 'FastMcpDbOutput'
 PURE_MCP_API_URL = 'PureMcpApiUrl'
+FAST_MCP_API_URL = 'FastMcpApiUrl'
 WEB_ADAPTER_MCP_API_URL = 'WebAdapterMcpApiUrl'
 GW_RESOURCE = 'mcp'  # The resource path for the API Gateway
 LAMBDA_LAYER_NAME = 'common'
