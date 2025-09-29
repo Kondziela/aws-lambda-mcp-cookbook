@@ -20,6 +20,7 @@ class MCPApiConstruct(Construct):
         self.db = self._build_db(id_prefix=f'{id_}db')
         self.lambda_role = self._build_lambda_role(self.db)
         self.common_layer = self._build_common_layer()
+        self.boto3_layer = self._build_boto3_layer()
         self.rest_api = self._build_api_gw()
         api_resource: aws_apigateway.Resource = self.rest_api.root.add_resource(constants.GW_RESOURCE)
         self.create_order_func = self._add_post_lambda_integration(api_resource, self.lambda_role, self.db)
@@ -85,6 +86,18 @@ class MCPApiConstruct(Construct):
             compatible_architectures=[_lambda.Architecture.X86_64],
         )
 
+    def _build_boto3_layer(self) -> _lambda.LayerVersion:
+        """Build a layer with the latest boto3 version"""
+        return _lambda.LayerVersion(
+            self,
+            f'{self.id_}Boto3Layer',
+            code=_lambda.Code.from_asset('layers/boto3'),
+            compatible_runtimes=[_lambda.Runtime.PYTHON_3_13],
+            description='Latest boto3 library with s3vectors support',
+            removal_policy=RemovalPolicy.DESTROY,
+            compatible_architectures=[_lambda.Architecture.X86_64],
+        )
+
     def _add_post_lambda_integration(
         self,
         api_resource: aws_apigateway.Resource,
@@ -106,7 +119,7 @@ class MCPApiConstruct(Construct):
             retry_attempts=0,
             timeout=Duration.seconds(constants.API_HANDLER_LAMBDA_TIMEOUT),
             memory_size=constants.API_HANDLER_LAMBDA_MEMORY_SIZE,
-            layers=[self.common_layer],
+            layers=[self.common_layer, self.boto3_layer],
             role=role,
             log_retention=RetentionDays.ONE_DAY,
             logging_format=_lambda.LoggingFormat.JSON,
