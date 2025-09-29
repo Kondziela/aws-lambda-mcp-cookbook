@@ -20,7 +20,8 @@ class ServiceStack(Stack):
 
         self.web_adapter_mcp_api = FastMCPServerConstruct(
             self,
-            get_construct_name(stack_prefix=id, construct_name='web_adapter', is_production_env=is_production_env),
+            get_construct_name(stack_prefix=id, construct_name='web_adapter'),
+            is_production_env=is_production_env,
         )
 
         # add security check
