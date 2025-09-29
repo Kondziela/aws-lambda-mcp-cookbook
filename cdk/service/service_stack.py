@@ -4,6 +4,7 @@ from constructs import Construct
 
 from cdk.service.constants import OWNER_TAG, SERVICE_NAME, SERVICE_NAME_TAG
 from cdk.service.mcp_construct import MCPApiConstruct
+from cdk.service.s3_vector import S3VectorConstruct
 from cdk.service.utils import get_construct_name, get_username
 
 
@@ -16,6 +17,11 @@ class ServiceStack(Stack):
             self,
             get_construct_name(stack_prefix=id, construct_name='pure'),
             is_production_env=is_production_env,
+        )
+
+        self.s3_vector = S3VectorConstruct(
+            self,
+            get_construct_name(stack_prefix=id, construct_name='s3_vector'),
         )
 
         # self.web_adapter_mcp_api = FastMCPServerConstruct(
