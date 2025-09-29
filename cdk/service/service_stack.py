@@ -21,7 +21,7 @@ class ServiceStack(Stack):
 
         self.s3_vector = S3VectorConstruct(
             self,
-            get_construct_name(stack_prefix=id, construct_name='s3_vector'),
+            get_construct_name(stack_prefix=id, construct_name='s3vector'),
         )
 
         # self.web_adapter_mcp_api = FastMCPServerConstruct(
