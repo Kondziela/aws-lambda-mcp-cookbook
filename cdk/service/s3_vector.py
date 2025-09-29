@@ -110,8 +110,8 @@ class S3VectorConstruct(Construct):
                 'S3_VECTOR_REGION': 'eu-central-1',
                 'BEDROCK_MODEL_ID': 'amazon.titan-embed-text-v2:0',
                 'BEDROCK_REGION': 'eu-central-1',
-                'S3_VECTOR_BUCKET': 'your-vector-bucket-name',  # Configure your S3 Vector bucket name
-                'S3_VECTOR_INDEX_NAME': 'default-index',  # Configure your S3 Vector index name
+                'S3_VECTOR_BUCKET': 'my-test-vector',  # Configure your S3 Vector bucket name
+                'S3_VECTOR_INDEX_NAME': 'my-test-vector-index',  # Configure your S3 Vector index name
             },
             tracing=_lambda.Tracing.ACTIVE,
             retry_attempts=0,
