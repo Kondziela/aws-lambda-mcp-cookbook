@@ -15,6 +15,7 @@ class S3VectorConstruct(Construct):
         self.lambda_role = self._build_lambda_role()
         self._grant_permissions_to_lambda_role()
         self.common_layer = self._build_common_layer()
+        self.boto3_layer = self._build_boto3_layer()
         self.lambda_function = self._build_lambda_function()
         self.query_lambda_function = self._build_query_lambda_function()
 
@@ -50,6 +51,18 @@ class S3VectorConstruct(Construct):
             )
         )
 
+    def _build_boto3_layer(self) -> _lambda.LayerVersion:
+        """Build a layer with the latest boto3 version"""
+        return _lambda.LayerVersion(
+            self,
+            f'{self.id_}Boto3Layer',
+            code=_lambda.Code.from_asset('layers/boto3'),
+            compatible_runtimes=[_lambda.Runtime.PYTHON_3_13],
+            description='Latest boto3 library with s3vectors support',
+            removal_policy=RemovalPolicy.DESTROY,
+            compatible_architectures=[_lambda.Architecture.X86_64],
+        )
+
     def _build_lambda_function(self) -> _lambda.Function:
         lambda_function = _lambda.Function(
             self,
@@ -70,7 +83,7 @@ class S3VectorConstruct(Construct):
             retry_attempts=0,
             timeout=Duration.seconds(constants.API_HANDLER_LAMBDA_TIMEOUT),
             memory_size=constants.API_HANDLER_LAMBDA_MEMORY_SIZE,
-            layers=[self.common_layer],
+            layers=[self.common_layer, self.boto3_layer],
             role=self.lambda_role,
             log_retention=RetentionDays.ONE_DAY,
             logging_format=_lambda.LoggingFormat.JSON,
@@ -104,7 +117,7 @@ class S3VectorConstruct(Construct):
             retry_attempts=0,
             timeout=Duration.seconds(constants.API_HANDLER_LAMBDA_TIMEOUT),
             memory_size=constants.API_HANDLER_LAMBDA_MEMORY_SIZE,
-            layers=[self.common_layer],
+            layers=[self.common_layer, self.boto3_layer],
             role=self.lambda_role,
             log_retention=RetentionDays.ONE_DAY,
             logging_format=_lambda.LoggingFormat.JSON,

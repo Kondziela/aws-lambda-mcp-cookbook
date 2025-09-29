@@ -63,24 +63,22 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             top_k=top_k,
             metadata_filter=metadata_filter,
             return_metadata=return_metadata,
-            return_distance=return_distance
+            return_distance=return_distance,
         )
 
         metrics.add_metric(name='VectorQuery', unit=MetricUnit.Count, value=1)
-        logger.info(f'Successfully queried vectors', extra={
-            'query_text': text,
-            'results_count': len(results.get('vectors', [])),
-            'top_k': top_k
-        })
+        logger.info(f'Successfully queried vectors', extra={'query_text': text, 'results_count': len(results.get('vectors', [])), 'top_k': top_k})
 
         return {
             'statusCode': 200,
-            'body': json.dumps({
-                'message': 'Vector query completed successfully',
-                'query_text': text,
-                'results_count': len(results.get('vectors', [])),
-                'vectors': results.get('vectors', [])
-            })
+            'body': json.dumps(
+                {
+                    'message': 'Vector query completed successfully',
+                    'query_text': text,
+                    'results_count': len(results.get('vectors', [])),
+                    'vectors': results.get('vectors', []),
+                }
+            ),
         }
 
     except Exception as e:
@@ -124,7 +122,7 @@ def query_similar_vectors(
     top_k: int,
     metadata_filter: Optional[Dict[str, Any]] = None,
     return_metadata: bool = True,
-    return_distance: bool = True
+    return_distance: bool = True,
 ) -> Dict[str, Any]:
     """Query S3 Vectors for similar vectors using query_vectors API"""
     try:
@@ -140,11 +138,9 @@ def query_similar_vectors(
             'vectorBucketName': vector_bucket_name,
             'indexName': index_name,
             'topK': top_k,
-            'queryVector': {
-                'float32': float32_embedding
-            },
+            'queryVector': {'float32': float32_embedding},
             'returnMetadata': return_metadata,
-            'returnDistance': return_distance
+            'returnDistance': return_distance,
         }
 
         # Add metadata filter if provided
@@ -174,10 +170,7 @@ def query_similar_vectors(
 
             formatted_vectors.append(formatted_vector)
 
-        return {
-            'vectors': formatted_vectors,
-            'total_results': len(formatted_vectors)
-        }
+        return {'vectors': formatted_vectors, 'total_results': len(formatted_vectors)}
 
     except Exception as e:
         logger.error(f'Error querying S3 Vectors: {str(e)}')
