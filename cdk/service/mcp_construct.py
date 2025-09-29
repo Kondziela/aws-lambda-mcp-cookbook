@@ -76,6 +76,28 @@ class MCPApiConstruct(Construct):
             ],
         )
 
+    def _grant_permissions_to_lambda_role(self) -> None:
+        self.lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    'bedrock:InvokeModel',
+                ],
+                resources=['arn:aws:bedrock:eu-central-1::foundation-model/amazon.titan-embed-text-v2:0'],
+            )
+        )
+        self.lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    's3vectors:PutVectors',
+                    's3vectors:QueryVectors',
+                    's3vectors:GetVectors',
+                ],
+                resources=['*'],
+            )
+        )
+
     def _build_common_layer(self) -> PythonLayerVersion:
         return PythonLayerVersion(
             self,
