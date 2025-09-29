@@ -3,7 +3,6 @@ from aws_cdk import aws_apigatewayv2 as apigwv2
 from aws_cdk import aws_dynamodb as dynamodb
 from aws_cdk import aws_iam as iam
 from aws_cdk import aws_lambda as _lambda
-from aws_cdk.aws_apigatewayv2_integrations import HttpLambdaIntegration
 from aws_cdk.aws_lambda_python_alpha import PythonLayerVersion
 from aws_cdk.aws_logs import RetentionDays
 from boto3 import Session
@@ -23,11 +22,11 @@ class FastMCPServerConstruct(Construct):
         self.db = self._build_db(id_prefix=f'{id_}db')
         self.lambda_role = self._build_lambda_role(self.db)
         self.common_layer = self._build_common_layer()
-        self.http_api = self._build_api_gw()
+        self.rest_api = self._build_api_gw()
         api_resource: aws_apigateway.Resource = self.rest_api.root.add_resource(constants.GW_RESOURCE)
         # self._create_mcp_integration(self.mcp_func, self.http_api)
         self.mcp_func = self._add_post_lambda_integration(api_resource, self.lambda_role, self.db)
-        self.monitoring = Monitoring(self, id_, self.http_api, self.db, [self.mcp_func])
+        self.monitoring = Monitoring(self, id_, self.rest_api, self.db, [self.mcp_func])
         if is_production_env:
             self.waf = WafToApiGatewayConstruct(self, f'{id_}waf', self.rest_api)
 
@@ -44,13 +43,6 @@ class FastMCPServerConstruct(Construct):
         )
         CfnOutput(self, id=constants.FAST_MCP_TABLE_NAME_OUTPUT, value=table.table_name).override_logical_id(constants.FAST_MCP_TABLE_NAME_OUTPUT)
         return table
-
-    def _create_mcp_integration(self, mcp: _lambda.Function, http_api: apigwv2.HttpApi) -> None:
-        mcp_integration = HttpLambdaIntegration('McpIntegration', mcp)
-        http_api.add_routes(path='/{proxy+}', methods=[apigwv2.HttpMethod.ANY], integration=mcp_integration)
-        CfnOutput(self, constants.WEB_ADAPTER_MCP_API_URL, value=f'{http_api.api_endpoint}/mcp').override_logical_id(
-            constants.WEB_ADAPTER_MCP_API_URL
-        )
 
     def _build_api_gw(self) -> apigwv2.HttpApi:
         rest_api: aws_apigateway.RestApi = aws_apigateway.RestApi(
