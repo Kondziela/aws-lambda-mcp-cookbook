@@ -21,7 +21,9 @@ class FastMCPServerConstruct(Construct):
         self.region = Session().region_name
         self.db = self._build_db(id_prefix=f'{id_}db')
         self.lambda_role = self._build_lambda_role(self.db)
+        self._grant_permissions_to_lambda_role()
         self.common_layer = self._build_common_layer()
+        self.boto3_layer = self._build_boto3_layer()
         self.mcp_func = self._add_post_lambda_integration(self.lambda_role, self.db)
         self.http_api = self._build_api_gw()
         self._create_mcp_integration(self.mcp_func, self.http_api)
@@ -72,12 +74,46 @@ class FastMCPServerConstruct(Construct):
             ],
         )
 
+    def _grant_permissions_to_lambda_role(self) -> None:
+        self.lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    'bedrock:InvokeModel',
+                ],
+                resources=['arn:aws:bedrock:eu-central-1::foundation-model/amazon.titan-embed-text-v2:0'],
+            )
+        )
+        self.lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    's3vectors:PutVectors',
+                    's3vectors:QueryVectors',
+                    's3vectors:GetVectors',
+                ],
+                resources=['*'],
+            )
+        )
+
     def _build_common_layer(self) -> PythonLayerVersion:
         return PythonLayerVersion(
             self,
             f'{self.id_}{constants.LAMBDA_LAYER_NAME}',
             entry=constants.COMMON_LAYER_BUILD_FOLDER,
             compatible_runtimes=[_lambda.Runtime.PYTHON_3_13],
+            removal_policy=RemovalPolicy.DESTROY,
+            compatible_architectures=[_lambda.Architecture.X86_64],
+        )
+
+    def _build_boto3_layer(self) -> _lambda.LayerVersion:
+        """Build a layer with the latest boto3 version"""
+        return _lambda.LayerVersion(
+            self,
+            f'{self.id_}Boto3Layer',
+            code=_lambda.Code.from_asset('layers/boto3'),
+            compatible_runtimes=[_lambda.Runtime.PYTHON_3_13],
+            description='Latest boto3 library with s3vectors support',
             removal_policy=RemovalPolicy.DESTROY,
             compatible_architectures=[_lambda.Architecture.X86_64],
         )
@@ -107,6 +143,7 @@ class FastMCPServerConstruct(Construct):
             memory_size=constants.API_HANDLER_LAMBDA_MEMORY_SIZE,
             layers=[
                 self.common_layer,
+                self.boto3_layer,
                 PythonLayerVersion.from_layer_version_arn(
                     self,
                     f'{self.id_}web_adapter_layer',
