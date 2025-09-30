@@ -47,7 +47,7 @@ def math(a: int, b: int) -> int:
 
 
 @mcp.tool()
-def search_vectors(
+def imprezy_wroclaw(
     text: str, top_k: int = 5, metadata_filter: Optional[Dict[str, Any]] = None, return_metadata: bool = True, return_distance: bool = True
 ) -> Dict[str, Any]:
     """Search for similar vectors in S3 Vector database using text input

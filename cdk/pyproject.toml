@@ -7,7 +7,7 @@ name = "service-cdk"
 version = "1.0"
 description = "CDK service code"
 authors = [
-    { name = "Ran Isenberg", email = "ran.isenberg@ranthebuilder.cloud" }
+    { name = "Artur Kondziela", email = "artur.kondziela@gmail.com" }
 ]
 classifiers = [
     "Intended Audience :: Developers",

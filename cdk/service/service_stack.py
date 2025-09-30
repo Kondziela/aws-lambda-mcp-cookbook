@@ -24,11 +24,7 @@ class ServiceStack(Stack):
             get_construct_name(stack_prefix=id, construct_name='s3vector'),
         )
 
-        # self.web_adapter_mcp_api = FastMCPServerConstruct(
-        #     self,
-        #     get_construct_name(stack_prefix=id, construct_name='web_adapter'),
-        #     is_production_env=is_production_env,
-        # )
+        self.web_adapter_mcp_api = FastMCPServerConstruct(self, get_construct_name(stack_prefix=id, construct_name='web_adapter'))
 
         # add security check
         self._add_security_tests()
