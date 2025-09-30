@@ -4,6 +4,7 @@ from constructs import Construct
 
 from cdk.service.constants import OWNER_TAG, SERVICE_NAME, SERVICE_NAME_TAG
 from cdk.service.mcp_construct import MCPApiConstruct
+from cdk.service.fast_mcp_server_construct import FastMCPServerConstruct
 from cdk.service.s3_vector import S3VectorConstruct
 from cdk.service.utils import get_construct_name, get_username
 
