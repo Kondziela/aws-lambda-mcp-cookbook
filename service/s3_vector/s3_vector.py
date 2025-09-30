@@ -143,7 +143,6 @@ def store_vector_in_s3(embedding: List[float], metadata: Dict[str, Any]) -> Dict
                         'text': metadata['text'],
                         'date': metadata['date'],
                         'price': metadata['price'],
-                        'private': metadata['private'],
                         'embedding_model': metadata['embedding_model'],
                         'embedding_dimension': metadata['embedding_dimension'],
                         'created_at': metadata['created_at'],

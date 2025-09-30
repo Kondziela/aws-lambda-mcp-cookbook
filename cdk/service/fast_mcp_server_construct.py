@@ -136,6 +136,12 @@ class FastMCPServerConstruct(Construct):
                 'TABLE_NAME': db.table_name,  # for mcp session store
                 'AWS_LAMBDA_EXEC_WRAPPER': '/opt/bootstrap',
                 'PORT': '8000',
+                # Environment variables for MCP server
+                'BEDROCK_REGION': 'eu-central-1',
+                'S3_VECTOR_REGION': 'eu-central-1',
+                'BEDROCK_MODEL_ID': 'amazon.titan-embed-text-v2:0',
+                'S3_VECTOR_BUCKET': 'my-test-vector',
+                'S3_VECTOR_INDEX_NAME': 'my-test-vector-index',
             },
             tracing=_lambda.Tracing.ACTIVE,
             retry_attempts=0,

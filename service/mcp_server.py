@@ -4,6 +4,7 @@ from service.logic.prompts.hld import hld_prompt
 from service.logic.resources.profiles import get_profile_by_id
 from service.logic.tools.math import add_two_numbers
 from service.handlers.utils.observability import logger, metrics
+from aws_lambda_powertools.metrics import MetricUnit
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 import json
