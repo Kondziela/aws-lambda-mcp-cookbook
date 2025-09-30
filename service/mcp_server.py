@@ -1,11 +1,13 @@
 from fastmcp import FastMCP
 
-from service.handlers.utils.observability import logger
 from service.logic.prompts.hld import hld_prompt
 from service.logic.resources.profiles import get_profile_by_id
 from service.logic.tools.math import add_two_numbers
+from service.handlers.utils.observability import logger, metrics
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
+import json
+import os
 
 import boto3
 
@@ -58,15 +60,15 @@ def imprezy_wroclaw(opis: str, date: date = None, miasto: Optional[str] = None, 
         metadata_filter['date'] = date.isoformat()
 
         if miasto:
-            metadata_filter['miasto'] = miasto
+            metadata_filter['city'] = miasto
 
         if cena is not None:
             if cena == 0:
                 # Looking for free events (price equals 0)
-                metadata_filter['cena'] = 0
+                metadata_filter['price'] = 0
             else:
                 # Looking for events up to specified price
-                metadata_filter['cena'] = {'$lte': cena}
+                metadata_filter['price'] = {'$lte': cena}
 
         # Query S3 Vectors for similar vectors
         results = _query_with_s3vectors(query_embedding, top_k, metadata_filter, True, True)
@@ -104,7 +106,6 @@ def imprezy_wroclaw(opis: str, date: date = None, miasto: Optional[str] = None, 
         raise
 
 
-@tracer.capture_method
 def _generate_embedding(text: str) -> List[float]:
     """Generate embedding using Amazon Titan model"""
     try:
@@ -133,7 +134,6 @@ def _generate_embedding(text: str) -> List[float]:
         raise
 
 
-@tracer.capture_method
 def _query_with_s3vectors(
     query_embedding: List[float],
     top_k: int,

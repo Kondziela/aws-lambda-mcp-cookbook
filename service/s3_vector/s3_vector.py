@@ -42,9 +42,9 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             data = body
 
         text = data.get('text', '')
-        date = data.get('date', datetime.now().isoformat())
-        price = data.get('price', 0.0)
-        private = data.get('private', False)
+        date = data.get('date', datetime.now().strftime('%d-%m-%Y'))
+        price = data.get('cena', 0.0)
+        miasto = data.get('miasto', 'Wrocław')
 
         if not text:
             return {'statusCode': 400, 'body': json.dumps({'error': 'Text parameter is required'})}
@@ -58,7 +58,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             'text': text,
             'date': date,
             'price': float(price),
-            'private': bool(private),
+            'city': miasto,
             'embedding_model': os.environ.get('BEDROCK_MODEL_ID', 'amazon.titan-embed-text-v2:0'),
             'embedding_dimension': len(embedding),
             'created_at': datetime.now().isoformat(),
